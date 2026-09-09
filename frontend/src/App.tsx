@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { EntityDetailsPanel } from './components/EntityDetailsPanel'
-import { GraphPanelPlaceholder } from './components/GraphPanelPlaceholder'
+import { GraphView } from './components/GraphView'
 import { SearchBar } from './components/SearchBar'
 import type { EntitySelection } from './types/selection'
 
@@ -23,7 +23,7 @@ function App() {
         </section>
 
         <section className="app__graph">
-          <GraphPanelPlaceholder selection={selection} />
+          <GraphView selection={selection} onSelect={setSelection} />
         </section>
       </main>
     </div>

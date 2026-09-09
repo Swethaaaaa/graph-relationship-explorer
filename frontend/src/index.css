@@ -15,14 +15,20 @@
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#root {
+  height: 100%;
   margin: 0;
+}
+
+body {
   background: var(--bg);
   color: var(--text);
 }
 
 .app {
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
 }
@@ -30,6 +36,7 @@ body {
 .app__header {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
+  flex: none;
 }
 
 .app__header h1 {
@@ -39,6 +46,7 @@ body {
 
 .app__body {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: 320px 1fr 1fr;
   gap: 1px;
@@ -49,13 +57,29 @@ body {
 .app__details,
 .app__graph {
   background: var(--bg);
+  min-height: 0;
+}
+
+.app__sidebar,
+.app__details {
   padding: 1rem;
   overflow-y: auto;
+}
+
+.app__graph {
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
   .app__body {
     grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .app__sidebar,
+  .app__details,
+  .app__graph {
+    min-height: 320px;
   }
 }
 
@@ -213,16 +237,61 @@ body {
   text-decoration: underline;
 }
 
-/* Graph panel placeholder */
+/* Graph view */
 
-.graph-panel-placeholder {
+.graph-view {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.graph-view__toolbar {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.graph-view__toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.graph-view__toolbar select {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+}
+
+.graph-view__stats {
+  color: var(--text-dim);
+  margin-left: auto;
+}
+
+.graph-view__canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.graph-view__hint {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: var(--text-dim);
-  border: 1px dashed var(--border);
-  border-radius: 8px;
   padding: 2rem;
+  margin: 0;
+}
+
+.graph-view__hint--error {
+  color: var(--error);
 }

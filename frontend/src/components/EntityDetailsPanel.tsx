@@ -1,18 +1,10 @@
+import { RELATIONSHIP_LABELS } from '../constants'
 import { useEntityDetails } from '../hooks/useEntityDetails'
 import type { EntitySelection } from '../types/selection'
 
 interface Props {
   selection: EntitySelection | null
   onSelect: (selection: EntitySelection) => void
-}
-
-const RELATIONSHIP_LABELS: Record<string, string> = {
-  USER_WORKS_AT_COMPANY: 'works at',
-  USER_MEMBER_OF_TEAM: 'member of',
-  USER_HAS_SKILL: 'has skill',
-  USER_WORKED_ON_PROJECT: 'worked on',
-  PROJECT_USES_TECHNOLOGY: 'uses',
-  USER_COLLABORATED_WITH_USER: 'collaborated with',
 }
 
 export function EntityDetailsPanel({ selection, onSelect }: Props) {

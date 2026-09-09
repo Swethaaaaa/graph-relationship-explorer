@@ -27,7 +27,7 @@ graph-relationship-explorer/
 - [x] Phase 3 — REST APIs (entities + relationships)
 - [x] Phase 4 — Graph traversal (Cypher-based)
 - [x] Phase 5 — React frontend
-- [ ] Phase 6 — Graph visualization
+- [x] Phase 6 — Graph visualization
 - [ ] Phase 7 — WebSockets (real-time updates)
 - [ ] Phase 8 — Tests
 - [ ] Phase 9 — Docker
@@ -129,8 +129,8 @@ library would add more weight than it saves).
   "get entity" + "get relationships" pair, and works identically for all
   six entity types (unlike `/api/users/{id}/connections`, which is
   User-only).
-- **Graph panel** — currently a placeholder; Phase 6 replaces it with an
-  actual force-directed graph rendering the same `/api/graph` response.
+- **Graph panel** — a real force-directed graph (Phase 6, below) rendering
+  the same `/api/graph` response.
 
 Run it (needs the backend running too, for real data):
 
@@ -159,10 +159,49 @@ docker compose up -d neo4j && (cd backend && mvn spring-boot:run) &
 cd frontend && npm run dev
 ```
 
-`oxlint` flags 3 warnings (`set-state-in-effect` x2, `exhaustive-deps` x1)
-on the two data-fetching effects in `SearchBar` and `useEntityDetails`.
-Both are the standard "fetch in a `useEffect`, `setState` in the callback"
-pattern — correct here, just newer lint rules nudging toward a data-fetching
-library (e.g. TanStack Query) or `use()`. That would be a reasonable
-follow-up, but is more machinery than this app's read-only query set
-justifies today.
+`oxlint` flags warnings (`set-state-in-effect`, `exhaustive-deps`) on each
+of the three data-fetching effects (`SearchBar`, `useEntityDetails`,
+`GraphView`). All are the standard "fetch in a `useEffect`, `setState` in
+the callback" pattern — correct here, just newer lint rules nudging toward
+a data-fetching library (e.g. TanStack Query) or `use()`. That would be a
+reasonable follow-up, but is more machinery than this app's read-only query
+set justifies today.
+
+## Graph visualization (Phase 6)
+
+[GraphView](frontend/src/components/GraphView.tsx) renders `/api/graph/{entityType}/{id}?depth=N`
+using [`react-force-graph-2d`](https://github.com/vasturiano/react-force-graph)
+(a canvas-based force layout on top of d3-force) — not a hand-rolled
+rendering engine, per the project's own requirement.
+
+- **Nodes, edges, relationship labels** — nodes are colored by entity type
+  and labeled with their name; edges are drawn with directional arrowheads
+  and their relationship type as a label at the midpoint (also shown on
+  hover as a tooltip).
+- **Zoom / pan / drag** — the library's default mouse-wheel zoom,
+  click-drag pan, and node-drag interactions; nothing custom was needed.
+- **Selecting nodes / expanding connections** — clicking a node calls the
+  same `onSelect` callback the search results and the details panel's
+  relationship links use, which re-centers the graph (and the details
+  panel) on that node — "expanding connections" is implemented as
+  re-centering the traversal on whatever you click, so all three panels
+  (search, details, graph) always agree on the current selection.
+- **Changing traversal depth** — a depth selector (1–4, matching the
+  backend's default `app.graph.max-traversal-depth`) in the graph panel's
+  toolbar, independent of the details panel's fixed depth-1 view.
+
+**Verified with real interaction, not just a build check:** no Neo4j is
+available in this sandbox, so I mocked `fetch` in a live browser session
+(intercepting only `/api/users/search` and `/api/graph/user/*`, passing
+everything else through) and drove the actual app: searched for "ali",
+selected "Alice Smith", confirmed the details panel showed her properties
+and 3 relationships, confirmed the graph rendered all 4 nodes correctly
+colored/labeled with edge labels, then clicked "Acme Corp" in the
+relationship list and confirmed both the details panel and the graph
+correctly re-fetched for the new selection (and displayed the same
+real error-handling path, `Request failed with status 502`, since Acme
+Corp wasn't in the mock — proving the pivot logic runs the real code
+path, not a scripted demo). Still unverified: the same flow against a real
+backend/Neo4j, and direct click-to-select on a graph *node* specifically
+(I verified pivoting via the details-panel link, which shares the same
+`onSelect` handler as node clicks) — worth doing once Docker is available.
