@@ -22,4 +22,14 @@ public enum EntityType {
     public String label() {
         return label;
     }
+
+    /** Reverse lookup from a Neo4j label string (e.g. Cypher's {@code labels(n)[0]}) back to the enum. */
+    public static EntityType fromLabel(String label) {
+        for (EntityType type : values()) {
+            if (type.label.equals(label)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown entity label: " + label);
+    }
 }

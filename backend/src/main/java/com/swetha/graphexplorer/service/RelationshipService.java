@@ -1,6 +1,5 @@
 package com.swetha.graphexplorer.service;
 
-import com.swetha.graphexplorer.domain.enums.EntityType;
 import com.swetha.graphexplorer.domain.enums.RelationshipType;
 import com.swetha.graphexplorer.dto.request.CreateRelationshipRequest;
 import com.swetha.graphexplorer.dto.response.RelationshipResponse;
@@ -26,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RelationshipService {
 
     private final Neo4jClient neo4jClient;
+    private final EntityExistenceChecker entityExistenceChecker;
 
     @Transactional
     public RelationshipResponse createRelationship(CreateRelationshipRequest request) {
@@ -39,8 +39,8 @@ public class RelationshipService {
                             type.sourceType().label(), type.name()));
         }
 
-        requireExists(type.sourceType(), sourceId);
-        requireExists(type.targetType(), targetId);
+        entityExistenceChecker.requireExists(type.sourceType(), sourceId);
+        entityExistenceChecker.requireExists(type.targetType(), targetId);
 
         Map<String, Object> properties = RelationshipPropertyValidator.normalize(type, request.propertiesOrEmpty());
 
@@ -73,18 +73,6 @@ public class RelationshipService {
 
         if (summary.counters().relationshipsDeleted() == 0) {
             throw new EntityNotFoundException("Relationship with id '%s' was not found".formatted(relationshipId));
-        }
-    }
-
-    private void requireExists(EntityType entityType, String id) {
-        boolean exists = neo4jClient.query(
-                        "MATCH (n:%s {id: $id}) RETURN count(n) > 0 AS exists".formatted(entityType.label()))
-                .bindAll(Map.of("id", id))
-                .fetchAs(Boolean.class)
-                .one()
-                .orElse(false);
-        if (!exists) {
-            throw new EntityNotFoundException(entityType, id);
         }
     }
 }

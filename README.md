@@ -25,7 +25,7 @@ graph-relationship-explorer/
 - [x] Phase 1 — Repository structure and architecture
 - [x] Phase 2 — Neo4j graph model and backend domain layer
 - [x] Phase 3 — REST APIs (entities + relationships)
-- [ ] Phase 4 — Graph traversal (Cypher-based)
+- [x] Phase 4 — Graph traversal (Cypher-based)
 - [ ] Phase 5 — React frontend
 - [ ] Phase 6 — Graph visualization
 - [ ] Phase 7 — WebSockets (real-time updates)
@@ -77,14 +77,38 @@ cd backend && mvn spring-boot:run
 
 Swagger UI: http://localhost:8080/swagger-ui.html · OpenAPI JSON: http://localhost:8080/v3/api-docs
 
+## Graph traversal & relationship discovery (Phase 4)
+
+- `GET /api/graph/{entityType}/{id}?depth=1..4` — the induced subgraph
+  reachable from an entity within `depth` hops (nodes + every relationship
+  between two nodes in that set). `entityType` is one of `user`, `company`,
+  `team`, `skill`, `project`, `technology`. Depth is capped by
+  `app.graph.max-traversal-depth` (default 4, env `GRAPH_MAX_DEPTH`) — a
+  request beyond that is a 400 `INVALID_GRAPH_QUERY`, not an expensive query.
+- `GET /api/users/{id}/connections` — a user's direct relationships, each
+  with its type, direction, and properties.
+- `GET /api/users/{id}/common-connections/{otherUserId}` — entities both
+  users are connected to.
+- `GET /api/users/{id}/shortest-path/{otherUserId}` — shortest path via
+  Neo4j's `shortestPath()`, bounded by `app.graph.max-shortest-path-hops`
+  (default 6). 404 `NO_PATH_FOUND` if the users aren't connected within that
+  bound.
+
+All of these are plain Cypher against `Neo4jClient` — no traversal or
+shortest-path algorithm is implemented in Java. See
+[docs/NEO4J_VS_POSTGRES.md](docs/NEO4J_VS_POSTGRES.md) for why.
+
 ## Tests
 
 ```bash
-cd backend && mvn test                       # fast tests, no Docker needed
-cd backend && mvn test -Dtest=GraphDomainModelIT   # Neo4j integration test, needs Docker
+cd backend && mvn test                              # fast tests, no Docker needed
+cd backend && mvn test -Dtest=GraphDomainModelIT     # Neo4j integration test (Phase 2 model), needs Docker
+cd backend && mvn test -Dtest=GraphTraversalIT       # Neo4j integration test (Phase 4 traversal), needs Docker
 ```
 
 `UserControllerTest` exercises real HTTP dispatch (validation +
 `GlobalExceptionHandler`) with the service layer mocked — no database
-needed. `GraphDomainModelIT` needs a local Docker daemon (Testcontainers
-starts a real Neo4j).
+needed. The two `*IT` tests need a local Docker daemon (Testcontainers
+starts a real Neo4j); `mvn test` skips them automatically (Surefire's
+default naming convention only picks up `*Test`), so the fast suite never
+needs Docker.

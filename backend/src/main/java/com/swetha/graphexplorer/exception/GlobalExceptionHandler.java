@@ -38,6 +38,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "INVALID_RELATIONSHIP", ex.getMessage(), request);
     }
 
+    @ExceptionHandler(InvalidGraphQueryException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidGraphQuery(
+            InvalidGraphQueryException ex, HttpServletRequest request) {
+        return build(HttpStatus.BAD_REQUEST, "INVALID_GRAPH_QUERY", ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(NoPathFoundException.class)
+    public ResponseEntity<ApiErrorResponse> handleNoPathFound(NoPathFoundException ex, HttpServletRequest request) {
+        return build(HttpStatus.NOT_FOUND, "NO_PATH_FOUND", ex.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
