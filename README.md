@@ -24,7 +24,7 @@ graph-relationship-explorer/
 
 - [x] Phase 1 — Repository structure and architecture
 - [x] Phase 2 — Neo4j graph model and backend domain layer
-- [ ] Phase 3 — REST APIs (entities + relationships)
+- [x] Phase 3 — REST APIs (entities + relationships)
 - [ ] Phase 4 — Graph traversal (Cypher-based)
 - [ ] Phase 5 — React frontend
 - [ ] Phase 6 — Graph visualization
@@ -49,13 +49,42 @@ properties), Spring Data Neo4j repositories, and a startup schema
 initializer that creates uniqueness constraints and indexes. See
 [docs/DATA_MODEL.md](docs/DATA_MODEL.md) for the full model and
 [docs/NEO4J_VS_POSTGRES.md](docs/NEO4J_VS_POSTGRES.md) for why this is a
-graph database problem, not a relational one. There are no REST endpoints
-yet — that's Phase 3.
+graph database problem, not a relational one.
 
-An integration test (`GraphDomainModelIT`) exercises the model against a
-real Neo4j via Testcontainers, including the self-referential
-`USER_COLLABORATED_WITH_USER` edge. It requires a local Docker daemon to run:
+## REST API (Phase 3)
+
+CRUD-style entity endpoints and a generic relationship endpoint now exist:
+
+- `POST /api/{users|companies|teams|skills|projects|technologies}` — create
+- `GET /api/{resource}/{id}` — fetch by id (404 `ENTITY_NOT_FOUND` if missing)
+- `GET /api/{resource}/search?q=&page=&size=` — paginated name search
+- `POST /api/relationships` — create/update a typed, property-bearing
+  relationship (`{"type": "USER_HAS_SKILL", "sourceId": "...", "targetId":
+  "...", "properties": {"proficiencyLevel": "EXPERT", "yearsOfExperience": 8}}`)
+- `DELETE /api/relationships/{elementId}` — delete a relationship
+
+Every error response uses the same shape:
+```json
+{"timestamp": "...", "status": 404, "error": "ENTITY_NOT_FOUND", "message": "...", "path": "..."}
+```
+
+Run the backend and browse the live API docs:
 
 ```bash
-cd backend && mvn test -Dtest=GraphDomainModelIT
+docker compose up -d neo4j
+cd backend && mvn spring-boot:run
 ```
+
+Swagger UI: http://localhost:8080/swagger-ui.html · OpenAPI JSON: http://localhost:8080/v3/api-docs
+
+## Tests
+
+```bash
+cd backend && mvn test                       # fast tests, no Docker needed
+cd backend && mvn test -Dtest=GraphDomainModelIT   # Neo4j integration test, needs Docker
+```
+
+`UserControllerTest` exercises real HTTP dispatch (validation +
+`GlobalExceptionHandler`) with the service layer mocked — no database
+needed. `GraphDomainModelIT` needs a local Docker daemon (Testcontainers
+starts a real Neo4j).
