@@ -1,0 +1,25 @@
+# Phase 1: only Neo4j is containerized so backend development can start
+# against a real graph database. The backend and frontend services are
+# added in Phase 9 once both apps exist.
+services:
+  neo4j:
+    image: neo4j:5.23-community
+    container_name: graph-explorer-neo4j
+    ports:
+      - "7474:7474" # browser UI
+      - "7687:7687" # bolt
+    environment:
+      NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-changeme123}
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD", "wget", "-O", "/dev/null", "http://localhost:7474"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  neo4j-data:
+  neo4j-logs:

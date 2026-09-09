@@ -1,0 +1,31 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env.local
+
+# Env / secrets
+.env
+*.env
+!.env.example
+
+# OS
+.DS_Store
+
+# Neo4j local data (if bind-mounted)
+neo4j-data/
+neo4j-logs/
+
+# Logs
+*.log
