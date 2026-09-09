@@ -23,7 +23,7 @@ graph-relationship-explorer/
 ## Development phases
 
 - [x] Phase 1 — Repository structure and architecture
-- [ ] Phase 2 — Neo4j graph model and backend domain layer
+- [x] Phase 2 — Neo4j graph model and backend domain layer
 - [ ] Phase 3 — REST APIs (entities + relationships)
 - [ ] Phase 4 — Graph traversal (Cypher-based)
 - [ ] Phase 5 — React frontend
@@ -44,5 +44,18 @@ docker compose up -d neo4j
 Neo4j Browser: http://localhost:7474 (user `neo4j`, password from `.env` /
 `.env.example`, default `changeme123`).
 
-The backend is scaffolded (`backend/pom.xml`, package structure, base
-configuration) but has no domain model or endpoints yet — that's Phase 2.
+The domain model now exists: 6 node types, 6 relationship types (all with
+properties), Spring Data Neo4j repositories, and a startup schema
+initializer that creates uniqueness constraints and indexes. See
+[docs/DATA_MODEL.md](docs/DATA_MODEL.md) for the full model and
+[docs/NEO4J_VS_POSTGRES.md](docs/NEO4J_VS_POSTGRES.md) for why this is a
+graph database problem, not a relational one. There are no REST endpoints
+yet — that's Phase 3.
+
+An integration test (`GraphDomainModelIT`) exercises the model against a
+real Neo4j via Testcontainers, including the self-referential
+`USER_COLLABORATED_WITH_USER` edge. It requires a local Docker daemon to run:
+
+```bash
+cd backend && mvn test -Dtest=GraphDomainModelIT
+```
