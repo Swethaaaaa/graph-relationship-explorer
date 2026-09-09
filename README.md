@@ -26,7 +26,7 @@ graph-relationship-explorer/
 - [x] Phase 2 — Neo4j graph model and backend domain layer
 - [x] Phase 3 — REST APIs (entities + relationships)
 - [x] Phase 4 — Graph traversal (Cypher-based)
-- [ ] Phase 5 — React frontend
+- [x] Phase 5 — React frontend
 - [ ] Phase 6 — Graph visualization
 - [ ] Phase 7 — WebSockets (real-time updates)
 - [ ] Phase 8 — Tests
@@ -112,3 +112,57 @@ needed. The two `*IT` tests need a local Docker daemon (Testcontainers
 starts a real Neo4j); `mvn test` skips them automatically (Surefire's
 default naming convention only picks up `*Test`), so the fast suite never
 needs Docker.
+
+## Frontend (Phase 5)
+
+React 19 + TypeScript, scaffolded with Vite. Talks to the backend over
+plain `fetch` (no axios — the request surface is small enough that a
+library would add more weight than it saves).
+
+- **Search bar** — pick an entity type, type a name, results update
+  debounced (300ms) via `GET /api/{resource}/search`.
+- **Entity details panel** — shows the selected entity's type, name, every
+  other property, and its direct relationships (type, direction, the
+  connected entity, clickable to pivot the selection). This reuses
+  `GET /api/graph/{entityType}/{id}?depth=1` — the same endpoint the
+  Phase 6 graph visualization will call — rather than a separate
+  "get entity" + "get relationships" pair, and works identically for all
+  six entity types (unlike `/api/users/{id}/connections`, which is
+  User-only).
+- **Graph panel** — currently a placeholder; Phase 6 replaces it with an
+  actual force-directed graph rendering the same `/api/graph` response.
+
+Run it (needs the backend running too, for real data):
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+Vite proxies `/api` to `http://localhost:8080` in dev
+([vite.config.ts](frontend/vite.config.ts)), so no CORS setup is needed
+locally; `VITE_API_BASE_URL` (see `.env.example`) overrides that for a
+production build.
+
+```bash
+cd frontend && npm run build   # tsc -b && vite build — verified clean
+cd frontend && npm run lint    # oxlint — 3 non-blocking warnings, see below
+```
+
+I ran the dev server against the app with the backend unreachable (no
+Docker/Neo4j in this environment) — the UI rendered correctly and surfaced
+the request failure through the same error-handling path a real backend
+error would take, which is what that check was for. I have not yet verified
+the full flow against real data; do that once the backend is running:
+
+```bash
+docker compose up -d neo4j && (cd backend && mvn spring-boot:run) &
+cd frontend && npm run dev
+```
+
+`oxlint` flags 3 warnings (`set-state-in-effect` x2, `exhaustive-deps` x1)
+on the two data-fetching effects in `SearchBar` and `useEntityDetails`.
+Both are the standard "fetch in a `useEffect`, `setState` in the callback"
+pattern — correct here, just newer lint rules nudging toward a data-fetching
+library (e.g. TanStack Query) or `use()`. That would be a reasonable
+follow-up, but is more machinery than this app's read-only query set
+justifies today.
