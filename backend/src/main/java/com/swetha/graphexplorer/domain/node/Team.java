@@ -1,5 +1,6 @@
 package com.swetha.graphexplorer.domain.node;
 
+import com.swetha.graphexplorer.domain.StringUuidGenerator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -22,7 +23,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 public class Team {
 
     @Id
-    @GeneratedValue(GeneratedValue.UUIDGenerator.class)
+    @GeneratedValue(StringUuidGenerator.class)
     private String id;
 
     private String name;

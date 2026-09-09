@@ -1,5 +1,6 @@
 package com.swetha.graphexplorer.domain.node;
 
+import com.swetha.graphexplorer.domain.StringUuidGenerator;
 import com.swetha.graphexplorer.domain.relationship.CollaboratedWith;
 import com.swetha.graphexplorer.domain.relationship.HasSkill;
 import com.swetha.graphexplorer.domain.relationship.MemberOfTeam;
@@ -31,7 +32,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 public class User {
 
     @Id
-    @GeneratedValue(GeneratedValue.UUIDGenerator.class)
+    @GeneratedValue(StringUuidGenerator.class)
     private String id;
 
     private String fullName;

@@ -1,5 +1,6 @@
 package com.swetha.graphexplorer.domain.node;
 
+import com.swetha.graphexplorer.domain.StringUuidGenerator;
 import com.swetha.graphexplorer.domain.enums.CompanySize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,7 +24,7 @@ import org.springframework.data.neo4j.core.schema.Node;
 public class Company {
 
     @Id
-    @GeneratedValue(GeneratedValue.UUIDGenerator.class)
+    @GeneratedValue(StringUuidGenerator.class)
     private String id;
 
     private String name;

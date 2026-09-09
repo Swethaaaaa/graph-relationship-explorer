@@ -1,5 +1,6 @@
 package com.swetha.graphexplorer.domain.node;
 
+import com.swetha.graphexplorer.domain.StringUuidGenerator;
 import com.swetha.graphexplorer.domain.enums.ProjectStatus;
 import com.swetha.graphexplorer.domain.relationship.UsesTechnology;
 import java.time.LocalDate;
@@ -28,7 +29,7 @@ import org.springframework.data.neo4j.core.schema.Relationship;
 public class Project {
 
     @Id
-    @GeneratedValue(GeneratedValue.UUIDGenerator.class)
+    @GeneratedValue(StringUuidGenerator.class)
     private String id;
 
     private String name;

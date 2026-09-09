@@ -51,6 +51,23 @@ initializer that creates uniqueness constraints and indexes. See
 [docs/NEO4J_VS_POSTGRES.md](docs/NEO4J_VS_POSTGRES.md) for why this is a
 graph database problem, not a relational one.
 
+> **A real bug was caught here, not just a mocked one.** Every node entity
+> originally used `@GeneratedValue(GeneratedValue.UUIDGenerator.class)`,
+> which compiles fine and passes Mockito-based tests, but throws
+> `ClassCastException: Cannot cast java.util.UUID to java.lang.String` the
+> first time you actually try to save an entity — `UUIDGenerator`
+> implements `IdGenerator<UUID>`, not `IdGenerator<String>`, and every
+> `@Id` field here is `String`. This sandbox has no Docker, so I installed
+> a standalone Neo4j 5.23 (no container) and ran the real backend against
+> it, which is how this surfaced. Fixed with a small custom
+> [`StringUuidGenerator`](backend/src/main/java/com/swetha/graphexplorer/domain/StringUuidGenerator.java).
+> Re-verified end-to-end afterward: created users/companies/skills,
+> created and deleted relationships, ran search, graph traversal at
+> multiple depths, common-connections, and shortest-path, all against
+> real data — and drove the real React frontend against the real running
+> backend (not the mocked `fetch` used earlier in Phase 5/6) and confirmed
+> search → select → details panel → graph rendering all work correctly.
+
 ## REST API (Phase 3)
 
 CRUD-style entity endpoints and a generic relationship endpoint now exist:
